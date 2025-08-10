@@ -1,0 +1,39 @@
+Kubernetes dashboard
+kubectl get secret admin-user-token -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 --decode - get the token for logging into the dashboard
+
+Elasticsearch:
+kubectl get secrets --namespace=default elasticsearch-master-credentials -ojsonpath='{.data.password}' | base64 -d - get the password for the user "elastic"
+
+kubectl delete ns amazon-cloudwatch flink ht-app otel-demo
+
+vsBPWk6CTFIXUHRy
+
+kubectl patch ingress ingress-externaldns-demo -n default -p '{"metadata":{"finalizers":[]}}' --type=merge
+kubectl patch ingress ingress-flink -n flink -p '{"metadata":{"finalizers":[]}}' --type=merge
+kubectl patch ingress ingress-kibana -n default -p '{"metadata":{"finalizers":[]}}' --type=merge
+kubectl patch ingress ingress-elasticsearch -n default -p '{"metadata":{"finalizers":[]}}' --type=merge
+kubectl patch ingress ingress-hub -n default -p '{"metadata":{"finalizers":[]}}' --type=merge
+
+
+kubectl create secret docker-registry myregistrysecret --docker-server=$DOCKER_REGISTRY_SERVER --docker-username=$DOCKER_USER --docker-password=$DOCKER_PASSWORD
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
+
+helm upgrade --install elasticsearch elastic/elasticsearch -f values.yaml
+helm upgrade --install kibana elastic/kibana -f values.yaml
+helm upgrade --install filebeat elastic/filebeat -f values.yaml
+helm install --name hadoop pfisterer-hadoop/Hadoop
+helm upgrade --install logstash elastic/logstash -f values.yaml
+
+kubectl create --namespace otel-demo -f https://raw.githubusercontent.com/open-telemetry/opentelemetry-demo/main/kubernetes/opentelemetry-demo.yaml
+kubectl -n ht-app create configmap otel-collector-config --from-file=/home/pandiyan/all/code/hello-telemetry/otel-collector-config.yaml
+kubectl -n ht-app create configmap otel-collector-config   --from-file=config.yaml=/home/pandiyan/all/code/hello-telemetry/otel-collector-config.yaml   --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n ht-app rollout restart deployment ht-otel-collector
+kubectl -n otel-demo rollout restart deployment grafana
+
+http://127.0.0.1:8001/api/v1/namespaces/otel-demo/services/load-generator:8089/proxy/
+http://127.0.0.1:8001/api/v1/namespaces/otel-demo/services/frontend-proxy:8080/proxy/
+http://127.0.0.1:8001/api/v1/namespaces/otel-demo/services/prometheus:9090/proxy
+http://127.0.0.1:8001/api/v1/namespaces/otel-demo/services/grafana:8080/proxy
+http://127.0.0.1:8001/api/v1/namespaces/otel-demo/services/jaeger-collector:9411/proxy
+
+kubectl -n otel-demo port-forward svc/grafana 8080:80
